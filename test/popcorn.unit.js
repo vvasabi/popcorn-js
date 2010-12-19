@@ -311,7 +311,10 @@ test("Real", function () {
 
 
   function plus(){ 
-    if ( ++count == expects ) start(); 
+    if ( ++count == expects ) {
+      start(); 
+      p.volume(0);
+    }
   }
   
   stop( 10000 );  
