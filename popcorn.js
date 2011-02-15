@@ -77,16 +77,18 @@
         return;  
       }
  
+      if ( (typeof entity) == "string" ) {
+        matches = rIdExp.exec( entity );
       
-      matches = rIdExp.exec( entity );
-      
-      if ( matches.length && matches[2]  ) {
-        elem = document.getElementById(matches[2]);
+        if ( matches.length && matches[2]  ) {
+          elem = document.getElementById(matches[2]);
+        }
+
+        this.video = elem ? elem : null;
+      } else if ( entity instanceof Object ) {
+        this.video = entity;
       }
-      
-      
-      this.video = elem ? elem : null;
-      
+
       this.data = {
         history: [],
         events: {},
@@ -177,7 +179,9 @@
         }
       };
 
-      isReady( this );
+      if ( this.video ) {
+        isReady( this );
+      }
 
       return this;
     }
