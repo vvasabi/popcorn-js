@@ -1,5 +1,32 @@
 ( function () {
   var undef;
+  
+  var extend = (function() {
+    var tmp = {};
+    if ( tmp.__lookupGetter__ && tmp.__lookupSetter__ && tmp.__defineGetter__ ) {
+      // Browsser supports get/set
+      return function (a,b) {
+        for ( var i in b ) {
+          var g = b.__lookupGetter__(i), s = b.__lookupSetter__(i);
+         
+          if ( g || s ) {
+            if ( g ) {
+              a.__defineGetter__(i, g);
+            }
+            if ( s ) {
+              a.__defineSetter__(i, s);
+            }
+          } else {
+            a[i] = b[i];
+          }
+        }
+        return a;
+      }
+    } else {
+      // Browser does not support get/set
+      return Popcorn.extend;
+    }
+  })();
     
   // base object for DOM-related behaviour like events
   var LikeADOM = function () {
@@ -63,7 +90,7 @@
     // Expect id to be a valid 32/64-bit unsigned integer, no more than 10 digits
     // Returns string, empty string if could not match
     function extractIdFromUri( uri ) {
-      var matches = uri.match(/^http:\/\/player\.vimeo\.com\/video\/[\d]{1,10}/i);
+      var matches = uri.match( /^http:\/\/player\.vimeo\.com\/video\/[\d]{1,10}/i );
       return matches ? matches[0].substr(30) : "";
     };
     
@@ -72,7 +99,7 @@
     // Expect id to be a valid 32/64-bit unsigned integer, no more than 10 digits
     // Returns string, empty string if could not match
     function extractIdFromUrl( url ) {
-      var matches = url.match(/vimeo\.com\/[\d]{1,10}/);
+      var matches = url.match( /vimeo\.com\/[\d]{1,10}/ );
       return matches ? matches[0].substr(10) : "";
     };
   
@@ -83,72 +110,20 @@
       }
       
       var swfObj = document.getElementById( containerId ),
-          isPaused = true,
-          htmlReadyState = 0,
           hasLoggeddLoading = false,
+          timerInterval = 0,
+          timePlayStarted = 0,
           vidId = extractIdFromUri( swfObj.src ),
-          vidDuration = -1,
-          vidTime = -1;
           evtHolder = new LikeADOM();
-      
-      var retObj = {
-        get duration() {
-          return vidDuration;
-        },
-        get paused() {
-          return isPaused;
-        },
-        set loop( val ) {
-          var doLoop = val === "loop" ? 1 : 0;
-          swfObj.api('api_setLoop', loop);
-        },
-        set volume( val ) {
-          // Normalize value
-          if ( val < 0 ) {
-            val = -val;
-          }
           
-          if ( val > 1 ) {
-            val %= 1;
-          }
+      swfObj.paused = true;
+      swfObj.duration = -1;
+      swfObj.readyState = 0;
+      swfObj.currentTime = -1;
           
-          // HTMl video expeccts to be 0.0 -> 1.0, Vimeo expects 0-100
-          swfObj.api('api_setVolume', val*100);
-        },
-        set src( val ) {
-          throw "Unsupported, can not dynamically set source of a Vimeo iframe";
-        },
-        get currentTime() {
-          return vidTime;
-        },
-        set currentTime( val ) {
-          this.seek( val );
-        },
-        get src() {
-          return swfObj.src;
-        },
-        get readyState() {
-          return htmlReadyState;
-        },
-        play: function() {
-          swfObj.api( "api_play" );
-        },
-        pause: function() {
-          swfObj.api( "api_pause" );
-        },
-        seek: function ( time ) {
-          swfObj.api( "api_seekTo", time );
-        },
-        getType: function() {
-          return "vimeo";
-        }
-      };
-      
-      retObj.prototype = swfObj;
-      
       // Hook an event listener for the player event into internal event system
       // Stick to HTML conventions of add event listener and keep lowercase, without prependinng "on"
-      retObj.addEventListener = function( evt, fn, capture ) {
+      swfObj.addEventListener = function( evt, fn, capture ) {
         var playerEvt;
         
         evt = evt.toLowerCase();
@@ -179,40 +154,71 @@
         }
       }
       
+      var retObj = extend(swfObj, {
+        // Popcorn's extend can't current handle get/set
+        
+        setLoop: function( val ) {
+          var doLoop = val === "loop" ? 1 : 0;
+          swfObj.api('api_setLoop', loop);
+        },
+        setVolume: function( val ) {
+          // Normalize value
+          if ( val < 0 ) {
+            val = -val;
+          }
+          
+          if ( val > 1 ) {
+            val %= 1;
+          }
+          
+          // HTMl video expeccts to be 0.0 -> 1.0, Vimeo expects 0-100
+          swfObj.api('api_setVolume', val*100);
+        },
+        play: function() {
+          swfObj.api( "api_play" );
+        },
+        pause: function() {
+          swfObj.api( "api_pause" );
+        },
+        seek: function ( time ) {
+          swfObj.api( "api_seekTo", time );
+        },
+      });
+      
       // Set up listeners to internally track state as needed
       retObj.addEventListener( "load", function() {
         swfObj.get( "api_getDuration", function( duration ) {
-          vidDuration = duration;
+          swfObj.duration = duration;
           evtHolder.dispatchEvent( "durationchange" );
         });
         
         swfObj.addEvent( "onProgress", function() {
           swfObj.get( "api_getCurrentTime", function( time ) {
-            vidTime = time;
+            swfObj.currentTime = time;
             evtHolder.dispatchEvent( "timeupdate" );
           });
         });
         
         // Add pause listener to keep track of playing state
         retObj.addEventListener( "pause", function() {
-          isPaused = true;
+          swfObj.paused = true;
         });
         
         // Add play listener to keep track of playing state
         retObj.addEventListener( "play", function() {
-          isPaused = false;
+          swfObj.paused = false;
         });
         
         // Add ended listener to keep track of playing state
         retObj.addEventListener( "ended", function() {
-          isPaused = true;
+          swfObj.paused = true;
         });
         
         // Add progress listener to keep track of ready state
         retObj.addEventListener( "progress", function() {
           if ( !hasLoggeddLoading ) {
             hasLoggedLoading = true;
-            htmlReadyState = 3;
+            swfObj.readyState = 3;
             evtHolder.dispatchEvent( "readystatechange" );
           }
         });

@@ -34,8 +34,8 @@
                 <button class="volume" id="btnVolume">Toggle Volume</button>
                 <div>
                   Current Time (s): <span id="player_time"></span>
+                  <br />Video Duration (s): <span id="player_duration"></span>
                   <br />Ready State: <span id="player_state"></span>
-                  <br />Video Duration: <span id="player_duration"></span>
                 </div>
                 <div id="footnotediv" width="50%" height="50%"> </div>
             </div>
@@ -68,13 +68,13 @@
                 //Loop
                 document.getElementById("btnLoop").addEventListener("click", function() {
                   loop = loop === 0 ? 1 : 0;
-                  player.loop = loop ? "loop" : "";
+                  player.seetLoop(loop);
                 }, false);
 
                 //Volume
                 document.getElementById("btnVolume").addEventListener("click", function() {
                   volume = volume === 1 ? 0.5 : 1;
-                  player.volume = volume;
+                  player.setVolume(volume);
                 }, false);
                 
                 player.addEventListener( "timeupdate", function() {
