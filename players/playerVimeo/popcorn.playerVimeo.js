@@ -153,12 +153,8 @@
         
         evt = evt.toLowerCase();
         
-        // Map html5 media events to vimeo events
-        // Vimeo expects  event names in camel case "onEventName"
-        if ( evt === "play" || evt === "pause" || evt === "load" ) {
-          // Direct mapping, CamelCase the event name as vimeo expects it
-          playerEvt = "on"+evt[0].toUpperCase() + evt.substr(1);
-        } else if ( evt === "seeking" ) {
+        // If it's an HTML media event supported by player, map
+        if ( evt === "seeking" ) {
           playerEvt = "onSeek";
         } else if ( evt === "timeupdate" ) {
           playerEvt = "onProgress";
@@ -166,6 +162,9 @@
           playerEvt = "onLoading";
         } else if ( evt === "ended" ) {
           playerEvt = "onFinish";
+        } else if ( evt === "play" || evt === "pause" || evt === "load" ) {
+          // Direct mapping, CamelCase the event name as vimeo expects it
+          playerEvt = "on"+evt[0].toUpperCase() + evt.substr(1);
         }
         
         // Vimeo only stores 1 callback per event
