@@ -1,0 +1,52 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+		http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>popcorn.js</groupId>
+	<artifactId>popcorn.js</artifactId>
+	<version>0.4.0.SNAPSHOT</version>
+	<packaging>pom</packaging>
+
+	<name>Popcorn.js</name>
+	<url>http://popcornjs.org</url>
+	
+	<build>
+		<plugins>
+			<!-- Taken from http://stackoverflow.com/questions/92372/maven-plugins-for-javascript -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>1.6</version>
+				<executions>
+					<execution>
+						<phase>test</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<target>
+								<taskdef name="jslint"
+									classname="com.googlecode.jslint4java.ant.JSLintTask" />
+								<jslint haltOnFailure="false">
+									<formatter type="xml"
+										destfile="${project.build.directory}/jslint.xml" />
+									<fileset dir="${basedir}" includes="popcorn.js" />
+								</jslint>
+							</target>
+						</configuration>
+					</execution>
+				</executions>
+				<dependencies>
+					<dependency>
+						<groupId>com.googlecode.jslint4java</groupId>
+						<artifactId>jslint4java-ant</artifactId>
+						<version>1.4.6</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+		</plugins>
+	</build>
+</project>
