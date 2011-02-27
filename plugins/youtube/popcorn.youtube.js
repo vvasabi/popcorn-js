@@ -122,7 +122,6 @@
       startTimeUpdater(this);
     });
     this.addEventListener('loadedmetadata', function() {
-      this.load();
       startProgressUpdater(this);
     });
   };
