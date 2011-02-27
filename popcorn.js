@@ -133,7 +133,7 @@
 
 
             if (typeof currentTime === "function") {
-              currentTime = currentTime();
+              currentTime = this.currentTime();
             }
 
             // Playbar advancing

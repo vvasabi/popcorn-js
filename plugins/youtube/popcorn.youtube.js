@@ -22,7 +22,7 @@
   var undef;
 
   // Config parameters
-  var debug = true;
+  var debug = false;
   var timeupdateInterval = 33; // 33 is suitable for 30 fps
   var progressInterval = 250; // as specified by WHATWG
 
@@ -118,7 +118,7 @@
 
   // For internal use only.
   Popcorn.Youtube.p.registerInternalEventHandlers = function() {
-    this.addEventListener('play', function() {
+    this.addEventListener('playing', function() {
       startTimeUpdater(this);
     });
     this.addEventListener('loadedmetadata', function() {
@@ -173,9 +173,9 @@
 
   Popcorn.Youtube.p.volume = function(vol) {
     if (vol == undef) {
-      return this.video.getVolume();
+      return this.video.getVolume() / 100;
     }
-    this.video.setVolume(vol);
+    this.video.setVolume(vol * 100);
     this.raiseEvent('volumechange');
   };
 
@@ -235,16 +235,16 @@
         youcorn.raiseEvent('loadstart');
       }
 
-      // Increase the progress.
-      youcorn.raiseEvent('progress');
-
-      // Fully loaded.
+      // fully loaded
       if (bytesLoaded >= bytesToLoad) {
         youcorn.fullyLoaded = true;
         youcorn.readyState = READY_STATE_HAVE_ENOUGH_DATA;
         youcorn.raiseEvent('canplaythrough');
         clearInterval(youcorn.progressUpdater);
+        return;
       }
+
+      youcorn.raiseEvent('progress');
     }, progressInterval);
   }
 
