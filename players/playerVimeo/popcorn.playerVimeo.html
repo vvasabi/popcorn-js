@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Popcorn Vimeo Player Example</title>
+        <style>
+            iframe{
+                display:block;
+                border:0;
+            }
+            body > div {
+                width: 100%;
+                float: left;
+                overflow: hidden;
+            }
+            div div {
+                margin-bottom:20px;
+            }
+
+            .api_output {
+                float:right;
+                padding-left: 20px;
+            }
+        </style>
+        <script src="../../popcorn.js"></script>
+        <script type="text/javascript" src="popcorn.playerVimeo.js"></script>
+    </head>
+    <body>
+        <div>
+            <div>
+                <iframe id="player_1" src="http://player.vimeo.com/video/11127501?js_api=1&js_swf_id=player_1" width="500" height="281" frameborder="0"></iframe>
+                <button class="simple" id="btnPlayPause">Play</button>
+                <button class="seek" id="btnSeek">Seek to 30</button>
+                <button class="loop" id="btnLoop">Toggle Loop</button>
+                <button class="volume" id="btnVolume">Toggle Volume</button>
+                <div>
+                  Current Time (s): <span id="player_time"></span>
+                  <br />Video Duration (s): <span id="player_duration"></span>
+                  <br />Ready State: <span id="player_state"></span>
+                </div>
+                <div id="footnotediv" width="50%" height="50%"> </div>
+            </div>
+        </div>
+        <script src="./froogaloop.min.js"></script>
+        <script type="text/javascript">
+            var player;
+            
+            VimeoEmbedLoaded = function( player )
+            {
+                var loop = 0;
+                var volume = 1;
+                
+                // Single play/pause button
+                document.getElementById("btnPlayPause").addEventListener("click", function(e) {
+                  if ( player.paused ) {
+                    player.play();
+                    e.target.innerHTML = "Pause";
+                  } else {
+                    player.pause();
+                    e.target.innerHTML = "Play";
+                  }
+                }, false);
+                
+                //Seek
+                document.getElementById("btnSeek").addEventListener("click", function() {
+                  player.seek( 30 );
+                }, false);
+
+                //Loop
+                document.getElementById("btnLoop").addEventListener("click", function() {
+                  loop = loop === 0 ? 1 : 0;
+                  player.seetLoop(loop);
+                }, false);
+
+                //Volume
+                document.getElementById("btnVolume").addEventListener("click", function() {
+                  volume = volume === 1 ? 0.5 : 1;
+                  player.setVolume(volume);
+                }, false);
+                
+                player.addEventListener( "timeupdate", function() {
+                  document.getElementById( "player_time" ).innerHTML = player.currentTime;
+                }, false);                
+            };
+
+            //On document ready
+            document.addEventListener("DOMContentLoaded", function() {
+              //Listen to the load event for all the iframes on the page
+              player = new LikeAVideo.Vimeo( "player_1" );
+              
+              player.addEventListener( "durationchange", function() {
+                document.getElementById("player_duration").innerHTML = player.duration;
+              }, false);
+              
+              player.addEventListener( "readystatechange", function() {
+                document.getElementById("player_state").innerHTML = player.readyState;
+              }, false);
+                
+              player.addEventListener( "load", function() {
+                VimeoEmbedLoaded( player );
+              }, false );
+            }, false);
+        </script>
+    </body>
+</html>
