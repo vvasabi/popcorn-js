@@ -228,7 +228,7 @@
         return;
       }
 
-      // raise an event is load has just started
+      // raise an event if load has just started
       if (!youcorn.loadStarted) {
         youcorn.loadStarted = true;
         youcorn.raiseEvent('loadstart');
