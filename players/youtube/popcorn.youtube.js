@@ -127,8 +127,8 @@
   };
 
   Popcorn.Youtube.p.play = function() {
-    this.video.playVideo();
     this.raiseEvent('play');
+    this.video.playVideo();
   };
 
   Popcorn.Youtube.p.pause = function() {
@@ -167,15 +167,20 @@
   };
 
   Popcorn.Youtube.p.mute = function() {
-    this.video.mute();
+    if (this.video.getVolume() != 0) {
+      this.video.mute();
+      this.raiseEvent('volumechange');
+    }
   };
 
   Popcorn.Youtube.p.volume = function(vol) {
     if (vol == undef) {
       return this.video.getVolume() / 100;
     }
-    this.video.setVolume(vol * 100);
-    this.raiseEvent('volumechange');
+    if (vol != this.volume()) {
+      this.video.setVolume(vol * 100);
+      this.raiseEvent('volumechange');
+    }
   };
 
   Popcorn.Youtube.p.addEventListener = function(eventName, func) {
