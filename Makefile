@@ -55,6 +55,10 @@ POPCORN_COMPLETE_LIST := --js ${POPCORN_SRC} \
 POPCORN_COMPLETE_DIST = ${DIST_DIR}/popcorn-complete.js
 POPCORN_COMPLETE_MIN = ${DIST_DIR}/popcorn-complete.min.js
 
+# For custom selection of parts to include.
+PARTS ?= $(error Specify the files to include, e.g. PARTS="popcorn.js")
+CUSTOM_DIST ?= ${DIST_DIR}/popcorn-custom.js
+CUSTOM_MIN ?= ${DIST_DIR}/popcorn-custom.min.js
 
 all: lint lint-plugins lint-parsers lint-players popcorn plugins parsers players complete min
 	@@echo "Popcorn build complete."
@@ -128,6 +132,12 @@ lint-players:
 	@@echo "Checking all players against JSLint..."
 	@@${RHINO} build/jslint-check.js ${PLAYERS_SRC}
 
+custom:
+	@@echo "Building a custom-made Popcorn.js..."
+	@@build/custom.sh "${VERSION}" "${PARTS}" "${CUSTOM_DIST}"
+	$(call compile, --js ${CUSTOM_DIST}, ${CUSTOM_MIN})
+
 clean:
 	@@echo "Removing Distribution directory:" ${DIST_DIR}
 	@@rm -rf ${DIST_DIR}
+
