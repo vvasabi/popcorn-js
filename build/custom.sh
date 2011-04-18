@@ -41,7 +41,7 @@ for i in $parts; do
 
   # Get the JS file(s) from the directory.
   if [ -d "$file" ]; then
-    files=`ls $file/*.js | grep -v unit`
+    files=`find $file -name "*.js" | grep -v unit`
     for j in $files; do
       sed -e 's/@VERSION/'$version'/' $j >> $output
       echo -e "\n" >> $output
