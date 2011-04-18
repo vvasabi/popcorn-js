@@ -132,9 +132,11 @@ lint-players:
 	@@echo "Checking all players against JSLint..."
 	@@${RHINO} build/jslint-check.js ${PLAYERS_SRC}
 
-custom:
+custom: ${DIST_DIR}
 	@@echo "Building a custom-made Popcorn.js..."
 	@@build/custom.sh "${VERSION}" "${PARTS}" "${CUSTOM_DIST}"
+
+custom-min: custom
 	$(call compile, --js ${CUSTOM_DIST}, ${CUSTOM_MIN})
 
 clean:
